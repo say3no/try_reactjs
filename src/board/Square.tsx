@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-type SquareType=string|null;
+type SquareType=('O'|'X'|null);
 
 interface ISquareProps {
     value: SquareType;
