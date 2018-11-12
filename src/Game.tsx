@@ -10,7 +10,8 @@ interface IHistoryData {
 }
 
 interface IGameState {
-    history: IHistoryData[]
+    history: IHistoryData[];
+    stepNumber: number;
     xIsNext: boolean;
 }
 
@@ -21,8 +22,16 @@ class Game extends React.Component<{}, IGameState> {
             history: [{
                 squares: Array(9).fill(null)
             }],
+            stepNumber: 0,
             xIsNext: true
         };
+    }
+
+    public jumpTo(step: number) {
+        this.setState({
+            stepNumber: step,
+            xIsNext: (step%2)===0,
+        });
     }
 
     public calculateWinner(squares: SquareType[]) {
@@ -47,8 +56,8 @@ class Game extends React.Component<{}, IGameState> {
     }
 
     public handleClick(i: number) {
-        const history=this.state.history;
-        const current=history[history.length-1];
+        const history=this.state.history.slice(0, this.state.stepNumber+1)
+        const current=history[this.state.stepNumber];
         const squares=current.squares.slice();
         if (this.calculateWinner(squares)||squares[i]) {
             return;
@@ -60,6 +69,7 @@ class Game extends React.Component<{}, IGameState> {
                 // the concat() method doesn’t mutate the original array, so we prefer it.
                 squares,
             }]),
+            stepNumber: history.length,
             xIsNext: !this.state.xIsNext,
         })
     }
@@ -68,6 +78,20 @@ class Game extends React.Component<{}, IGameState> {
         const history=this.state.history;
         const current=history[history.length-1];
         const winner=this.calculateWinner(current.squares);
+
+        const moves=history.map((step, move) => {
+            const desc=move?
+                'Go to move #'+move:
+                'Got to game start';
+            return (
+                <li key={move}>
+                    <button
+                        // tslint:disable-next-line:jsx-no-lambda
+                        onClick={() => this.jumpTo(move)}
+                    > {desc}</button>
+                </li>
+            );
+        });
 
         let status;
         if (winner) {
@@ -87,7 +111,7 @@ class Game extends React.Component<{}, IGameState> {
                 </div>
                 <div className="game-info">
                     <div>{status}</div>
-                    <ol>{/* TODO */}</ol>
+                    <ol>{moves}</ol>
                 </div>
             </div>
         );
